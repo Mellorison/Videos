@@ -27,6 +27,10 @@
     </style>
 
     <style name="DialogStyle_NoTitle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
         <item name="windowNoTitle">true</item>
     </style>
 
