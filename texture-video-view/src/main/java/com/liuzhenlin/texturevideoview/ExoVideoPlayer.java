@@ -266,10 +266,10 @@ public class ExoVideoPlayer extends VideoPlayer {
             mExoPlayer.addListener(new Player.EventListener() {
                 @SuppressLint("SwitchIntDef")
                 @Override
-                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                    onVideoBufferingStateChanged(playbackState == Player.STATE_BUFFERING);
+                public void onPlaybackStateChanged(int state) {
+                    onVideoBufferingStateChanged(state == Player.STATE_BUFFERING);
 
-                    switch (playbackState) {
+                    switch (state) {
                         case Player.STATE_READY:
                             if (getPlaybackState() == PLAYBACK_STATE_PREPARING) {
                                 restoreTrackSelections();
@@ -289,7 +289,7 @@ public class ExoVideoPlayer extends VideoPlayer {
                 @Override
                 public void onTimelineChanged(Timeline timeline, int reason) {
                     // Duration had been changed when new Uri was set and before the player was reset.
-                    if (reason == Player.TIMELINE_CHANGE_REASON_RESET) return;
+                    if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return;
 
                     if ((mInternalFlags & $FLAG_VIDEO_DURATION_DETERMINED) == 0) {
                         mInternalFlags |= $FLAG_VIDEO_DURATION_DETERMINED;
@@ -355,6 +355,7 @@ public class ExoVideoPlayer extends VideoPlayer {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void startVideo(boolean playWhenPrepared) {
         if (mVideoView != null) {
             mVideoView.cancelDraggingVideoSeekBar(false);
@@ -505,6 +506,7 @@ public class ExoVideoPlayer extends VideoPlayer {
                 // Retries the failed playback after error occurred
                 mInternalFlags |= $FLAG_PLAY_WHEN_PREPARED;
                 setPlaybackState(PLAYBACK_STATE_PREPARING);
+                //noinspection deprecation
                 mExoPlayer.retry();
                 break;
 
