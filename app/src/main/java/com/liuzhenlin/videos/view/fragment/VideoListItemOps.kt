@@ -75,7 +75,7 @@ private fun deleteItemsInternal(items: Array<out VideoListItem>) {
 }
 
 interface VideoListItemOpCallback<in T : VideoListItem> {
-    val isAsyncDeletingItems get() = sDeleteItemTasks.size > 0
+    public val isAsyncDeletingItems get() = sDeleteItemTasks.size > 0
 
     fun showDeleteItemDialog(item: T, onDeleteAction: (() -> Unit)? = null)
     fun showDeleteItemsPopupWindow(vararg items: T, onDeleteAction: (() -> Unit)? = null)

@@ -13,26 +13,28 @@ import java.util.*
 /**
  * @author 刘振林
  */
-abstract class BaseModel<Result>(context: Context) {
+abstract class BaseModel<Progress, Result>(context: Context) {
 
     protected val mContext: Context = context.applicationContext
     private var mLoader: AsyncTask<*, *, *>? = null
-    private var mOnLoadListeners: MutableList<OnLoadListener<Result>>? = null
+    private var mOnLoadListeners: MutableList<OnLoadListener<Progress, Result>>? = null
 
-    fun addOnLoadListener(listener: OnLoadListener<Result>) {
+    fun addOnLoadListener(listener: OnLoadListener<Progress, Result>) {
         if (mOnLoadListeners == null)
             mOnLoadListeners = LinkedList()
         if (!mOnLoadListeners!!.contains(listener))
             mOnLoadListeners!!.add(listener)
     }
 
-    fun removeOnLoadListener(listener: OnLoadListener<Result>) =
+    fun removeOnLoadListener(listener: OnLoadListener<Progress, Result>) =
             mOnLoadListeners?.remove(listener)
+
+    public val isLoading get() = mLoader != null
 
     protected fun onLoadStart() {
         mOnLoadListeners?.let {
-            for (listener in it.toTypedArray()) {
-                listener.onLoadStart()
+            for (i in it.size - 1 downTo 0) {
+                it[i].onLoadStart()
             }
         }
     }
@@ -40,8 +42,8 @@ abstract class BaseModel<Result>(context: Context) {
     protected fun onLoadFinish(result: Result) {
         mLoader = null
         mOnLoadListeners?.let {
-            for (listener in it.toTypedArray()) {
-                listener.onLoadFinish(result)
+            for (i in it.size - 1 downTo 0) {
+                it[i].onLoadFinish(result)
             }
         }
     }
@@ -49,8 +51,8 @@ abstract class BaseModel<Result>(context: Context) {
     private fun onLoadCanceled() {
         mLoader = null
         mOnLoadListeners?.let {
-            for (listener in it.toTypedArray()) {
-                listener.onLoadCanceled()
+            for (i in it.size - 1 downTo 0) {
+                it[i].onLoadCanceled()
             }
         }
     }
@@ -59,8 +61,16 @@ abstract class BaseModel<Result>(context: Context) {
         mLoader!!.cancel(true)
         mLoader = null
         mOnLoadListeners?.let {
-            for (listener in it.toTypedArray()) {
-                listener.onLoadError(cause)
+            for (i in it.size - 1 downTo 0) {
+                it[i].onLoadError(cause)
+            }
+        }
+    }
+
+    protected fun onLoadingProgressUpdate(progress: Progress) {
+        mOnLoadListeners?.let {
+            for (i in it.size - 1 downTo 0) {
+                it[i].onLoadingProgressUpdate(progress)
             }
         }
     }
@@ -82,9 +92,15 @@ abstract class BaseModel<Result>(context: Context) {
     protected abstract fun createAndStartLoader(): AsyncTask<*, *, *>
 
     @SuppressLint("StaticFieldLeak")
-    protected abstract inner class Loader<Params, Progress> : AsyncTask<Params, Progress, Result>() {
+    protected abstract inner class Loader<Params> : AsyncTask<Params, Progress, Result>() {
 
         override fun onPreExecute() = onLoadStart()
+
+        override fun onProgressUpdate(vararg values: Progress) {
+            if (!isCancelled) {
+                onLoadingProgressUpdate(values[0])
+            }
+        }
 
         override fun onPostExecute(result: Result) = onLoadFinish(result)
     }

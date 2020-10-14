@@ -6,6 +6,7 @@
 package com.liuzhenlin.texturevideoview.misc;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Singleton helper class for lazily initialization.
@@ -30,6 +31,11 @@ public abstract class Singleton<Params, Result> {
                 }
             }
         }
+        return mInstance;
+    }
+
+    @Nullable
+    public final Result getNoCreate() {
         return mInstance;
     }
 }

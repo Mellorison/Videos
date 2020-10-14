@@ -20,7 +20,7 @@ import java.util.*
 /**
  * @author 刘振林
  */
-class LocalVideoListModel(context: Context) : BaseModel<MutableList<VideoListItem>?>(context) {
+class LocalVideoListModel(context: Context) : BaseModel<Nothing, MutableList<VideoListItem>?>(context) {
 
     private var mOnReloadVideosListeners: MutableList<OnReloadVideosListener>? = null
 
@@ -38,11 +38,11 @@ class LocalVideoListModel(context: Context) : BaseModel<MutableList<VideoListIte
             mOnReloadVideosListeners?.let {
                 if (it.isEmpty()) return@let
 
-                for (listener in it.toTypedArray()) {
+                for (i in it.size - 1 downTo 0) {
                     @Suppress("UNCHECKED_CAST")
                     val copy = videos?.clone() as? MutableList<Video>
                     copy?.deepCopy(videos)
-                    listener.onReloadVideos(copy)
+                    it[i].onReloadVideos(copy)
                 }
             }
 
