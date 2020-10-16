@@ -8,10 +8,9 @@ package com.liuzhenlin.videos.utils;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -32,27 +31,26 @@ public class VideoUtils2 {
     private VideoUtils2() {
     }
 
-    public static void loadVideoThumbnailIntoImageView(@NonNull ImageView image,
+    public static void loadVideoThumbnailIntoImageView(@NonNull ImageView view,
                                                        @NonNull Video video) {
-        loadVideoThumbnailIntoImageView(image, video.getPath());
+        loadVideoThumbnailIntoImageView(view, video.getPath());
     }
 
-    public static void loadVideoThumbnailIntoImageView(@NonNull ImageView image,
+    public static void loadVideoThumbnailIntoImageView(@NonNull ImageView view,
                                                        @NonNull String path) {
-        loadVideoThumbnailIntoFragmentImageView(null, image, path);
+        loadVideoThumbnailIntoFragmentImageView(null, view, path);
     }
 
     public static void loadVideoThumbnailIntoFragmentImageView(@Nullable Fragment fragment,
-                                                               @NonNull ImageView image,
+                                                               @NonNull ImageView view,
                                                                @NonNull Video video) {
-        loadVideoThumbnailIntoFragmentImageView(fragment, image, video.getPath());
+        loadVideoThumbnailIntoFragmentImageView(fragment, view, video.getPath());
     }
 
     public static void loadVideoThumbnailIntoFragmentImageView(@Nullable Fragment fragment,
-                                                               @NonNull ImageView image,
+                                                               @NonNull ImageView view,
                                                                @NonNull String path) {
-        Context context = image.getContext();
-        Resources res = context.getResources();
+        Context context = view.getContext();
 
 //        final float aspectRatio = (float) video.getWidth() / (float) video.getHeight();
         final int thumbWidth = App.getInstance(context).getVideoThumbWidth();
@@ -60,9 +58,13 @@ public class VideoUtils2 {
         final int thumbHeight /* maxHeight */ = (int) (thumbWidth * 9f / 16f + 0.5f);
 //        final int thumbHeight = height > maxHeight ? maxHeight : height;
 
-        Bitmap bitmap = BitmapUtils2.createScaledBitmap(
-                BitmapFactory.decodeResource(res, R.drawable.ic_default_thumb),
-                thumbWidth, thumbHeight, true);
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
+        if (lp.width != thumbWidth || lp.height != thumbHeight) {
+            lp.width = thumbWidth;
+            lp.height = thumbHeight;
+            view.setLayoutParams(lp);
+        }
+        view.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
         RequestManager requestManager;
         if (fragment != null) {
@@ -74,8 +76,8 @@ public class VideoUtils2 {
                 .load(path)
                 .override(thumbWidth, thumbHeight)
                 .centerCrop()
-                .placeholder(new BitmapDrawable(res, bitmap))
-                .into(image);
+                .placeholder(R.drawable.ic_default_thumb)
+                .into(view);
     }
 
     @Nullable

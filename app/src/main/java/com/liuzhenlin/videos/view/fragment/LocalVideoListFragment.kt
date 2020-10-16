@@ -11,7 +11,6 @@ import android.content.Context
 import android.content.Intent
 import android.database.ContentObserver
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -49,7 +48,6 @@ import com.liuzhenlin.videos.dao.IVideoDao
 import com.liuzhenlin.videos.dao.VideoListItemDao
 import com.liuzhenlin.videos.model.LocalVideoListModel
 import com.liuzhenlin.videos.model.OnLoadListener
-import com.liuzhenlin.videos.utils.BitmapUtils2
 import com.liuzhenlin.videos.utils.FileUtils2
 import com.liuzhenlin.videos.utils.UiUtils
 import com.liuzhenlin.videos.utils.VideoUtils2
@@ -1086,16 +1084,15 @@ class LocalVideoListFragment : SwipeBackFragment(),
 
         val thumbImage = view.findViewById<ImageView>(R.id.image_videoListItem)
         val thumbSize = miniThumbSize
-        val placeholder = BitmapUtils2.createScaledBitmap(
-                BitmapFactory.decodeResource(res, R.drawable.ic_default_thumb),
-                thumbSize, (thumbSize * 9f / 16f + 0.5f).toInt(),
-                true)
+        thumbImage.maxWidth = thumbSize
+        thumbImage.maxHeight = thumbSize
+        thumbImage.adjustViewBounds = true
         val glideRequestManager = Glide.with(context.applicationContext)
         glideRequestManager
                 .load((item as? Video ?: (item as VideoDirectory).videos[0]).path)
                 .override(thumbSize)
                 .fitCenter()
-                .placeholder(BitmapDrawable(res, placeholder))
+                .placeholder(R.drawable.ic_default_thumb)
                 .into(thumbImage)
 
         val editText = view.findViewById<EditText>(R.id.editor_rename)
