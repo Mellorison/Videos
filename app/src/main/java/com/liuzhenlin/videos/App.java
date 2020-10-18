@@ -33,13 +33,13 @@ public class App extends Application {
 
     private int mStatusHeight;
 
-    private int mScreenWidth = -1;
-    private int mScreenHeight = -1;
+    private volatile int mScreenWidth = -1;
+    private volatile int mScreenHeight = -1;
 
-    private int mRealScreenWidth = -1;
-    private int mRealScreenHeight = -1;
+    private volatile int mRealScreenWidth = -1;
+    private volatile int mRealScreenHeight = -1;
 
-    private int mVideoThumbWidth = -1;
+    private volatile int mVideoThumbWidth = -1;
 
     private RefWatcher mRefWatcher;
 

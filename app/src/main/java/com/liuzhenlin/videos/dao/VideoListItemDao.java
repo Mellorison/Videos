@@ -66,7 +66,7 @@ public final class VideoListItemDao implements IVideoListItemDao {
                             VIDEO_RESOLUTION
                     }; //@formatter:on
 
-    private static String sResolutionSeparator;
+    private static volatile String sResolutionSeparator;
     private static final String SEPARATOR_LOWERCASE_X = "x";
     private static final String SEPARATOR_MULTIPLE_SIGN = "×";
 
@@ -92,23 +92,29 @@ public final class VideoListItemDao implements IVideoListItemDao {
 
     private void ensureResolutionSeparator() {
         if (sResolutionSeparator == null) {
-            Cursor cursor = mContentResolver.query(
-                    VIDEO_URI,
-                    new String[]{VIDEO_RESOLUTION},
-                    VIDEO_DURATION + " IS NOT NULL", null,
-                    "NULL LIMIT 1");
-            if (cursor != null) {
-                if (cursor.moveToFirst()) {
-                    if (cursor.getString(0).contains(SEPARATOR_LOWERCASE_X)) {
-                        sResolutionSeparator = SEPARATOR_LOWERCASE_X;
-                    } else {
-                        sResolutionSeparator = SEPARATOR_MULTIPLE_SIGN;
+            synchronized (VideoListItemDao.class) {
+                if (sResolutionSeparator == null) {
+                    String separator = null;
+                    Cursor cursor = mContentResolver.query(
+                            VIDEO_URI,
+                            new String[]{VIDEO_RESOLUTION},
+                            VIDEO_DURATION + " IS NOT NULL", null,
+                            "NULL LIMIT 1");
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            if (cursor.getString(0).contains(SEPARATOR_LOWERCASE_X)) {
+                                separator = SEPARATOR_LOWERCASE_X;
+                            } else {
+                                separator = SEPARATOR_MULTIPLE_SIGN;
+                            }
+                        }
+                        cursor.close();
                     }
+                    if (separator == null) {
+                        separator = SEPARATOR_LOWERCASE_X;
+                    }
+                    sResolutionSeparator = separator;
                 }
-                cursor.close();
-            }
-            if (sResolutionSeparator == null) {
-                sResolutionSeparator = SEPARATOR_LOWERCASE_X;
             }
         }
     }
@@ -118,54 +124,80 @@ public final class VideoListItemDao implements IVideoListItemDao {
         if (video == null) return false;
 
         ContentValues values = new ContentValues(5);
-        values.put(VIDEO_NAME, video.getName());
-        values.put(VIDEO_PATH, video.getPath());
-        values.put(VIDEO_SIZE, video.getSize());
-        values.put(VIDEO_DURATION, video.getDuration());
-        ensureResolutionSeparator();
-        values.put(VIDEO_RESOLUTION, video.getWidth() + sResolutionSeparator + video.getHeight());
-
-        if (mContentResolver.insert(VIDEO_URI, values) == null) {
-            return false;
-        }
-
-        values.clear();
         values.put(VIDEOS_COL_ID, video.getId());
         values.put(VIDEOS_COL_PROGRESS, video.getProgress());
         values.put(VIDEOS_COL_IS_TOPPED, video.isTopped() ? 1 : 0);
-        return mDataBase.insert(TABLE_VIDEOS, null, values) != Consts.NO_ID;
+
+        mDataBase.beginTransaction();
+        try {
+            if (mDataBase.insert(TABLE_VIDEOS, null, values) == Consts.NO_ID) {
+                return false;
+            }
+
+            values.clear();
+            values.put(VIDEO_NAME, video.getName());
+            values.put(VIDEO_PATH, video.getPath());
+            values.put(VIDEO_SIZE, video.getSize());
+            values.put(VIDEO_DURATION, video.getDuration());
+            ensureResolutionSeparator();
+            values.put(VIDEO_RESOLUTION, video.getWidth() + sResolutionSeparator + video.getHeight());
+            if (mContentResolver.insert(VIDEO_URI, values) != null) {
+                mDataBase.setTransactionSuccessful();
+                return true;
+            }
+        } finally {
+            mDataBase.endTransaction();
+        }
+        return false;
     }
 
     @Override
     public boolean deleteVideo(long id) {
-        mDataBase.delete(TABLE_VIDEOS, VIDEOS_COL_ID + "=" + id, null);
-        return mContentResolver.delete(VIDEO_URI, VIDEO_ID + "=" + id, null) == 1;
+        mDataBase.beginTransaction();
+        try {
+            mDataBase.delete(TABLE_VIDEOS, VIDEOS_COL_ID + "=" + id, null);
+
+            if (mContentResolver.delete(VIDEO_URI, VIDEO_ID + "=" + id, null) == 1) {
+                mDataBase.setTransactionSuccessful();
+                return true;
+            }
+        } finally {
+            mDataBase.endTransaction();
+        }
+        return false;
     }
 
     @Override
     public boolean updateVideo(@Nullable Video video) {
         if (video == null) return false;
 
-        ContentValues values = new ContentValues(5);
-        values.put(VIDEO_NAME, video.getName());
-        values.put(VIDEO_PATH, video.getPath());
-        values.put(VIDEO_SIZE, video.getSize());
-        values.put(VIDEO_DURATION, video.getDuration());
-        ensureResolutionSeparator();
-        values.put(VIDEO_RESOLUTION, video.getWidth() + sResolutionSeparator + video.getHeight());
-
         final long id = video.getId();
-        if (mContentResolver.update(VIDEO_URI, values, VIDEO_ID + "=" + id, null) == 1) {
-            values.clear();
-            values.put(VIDEOS_COL_PROGRESS, video.getProgress());
-            values.put(VIDEOS_COL_IS_TOPPED, video.isTopped() ? 1 : 0);
+        ContentValues values = new ContentValues(5);
+        values.put(VIDEOS_COL_PROGRESS, video.getProgress());
+        values.put(VIDEOS_COL_IS_TOPPED, video.isTopped() ? 1 : 0);
 
-            if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
-                return true;
+        mDataBase.beginTransaction();
+        try {
+            if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 0) {
+                values.put(VIDEOS_COL_ID, id);
+                if (mDataBase.insert(TABLE_VIDEOS, null, values) == -1) {
+                    return false;
+                }
             }
 
-            values.put(VIDEOS_COL_ID, id);
-            return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+            values.clear();
+            values.put(VIDEO_NAME, video.getName());
+            values.put(VIDEO_PATH, video.getPath());
+            values.put(VIDEO_SIZE, video.getSize());
+            values.put(VIDEO_DURATION, video.getDuration());
+            ensureResolutionSeparator();
+            values.put(VIDEO_RESOLUTION, video.getWidth() + sResolutionSeparator + video.getHeight());
+            if (mContentResolver.update(VIDEO_URI, values, VIDEO_ID + "=" + id, null) == 1) {
+                mDataBase.setTransactionSuccessful();
+                return true;
+            }
+        } finally {
+            mDataBase.endTransaction();
         }
         return false;
     }
@@ -338,16 +370,21 @@ public final class VideoListItemDao implements IVideoListItemDao {
                 case VIDEO_RESOLUTION:
                     final String resolution = cursor.getString(i);
                     if (resolution != null) {
-                        int separatorIndex;
+                        int separatorIndex = -1;
                         if (sResolutionSeparator == null) {
-                            separatorIndex = resolution.indexOf(SEPARATOR_LOWERCASE_X);
-                            if (separatorIndex != -1) {
-                                sResolutionSeparator = SEPARATOR_LOWERCASE_X;
-                            } else {
-                                sResolutionSeparator = SEPARATOR_MULTIPLE_SIGN;
-                                separatorIndex = resolution.indexOf(SEPARATOR_MULTIPLE_SIGN);
+                            synchronized (VideoListItemDao.class) {
+                                if (sResolutionSeparator == null) {
+                                    separatorIndex = resolution.indexOf(SEPARATOR_LOWERCASE_X);
+                                    if (separatorIndex != -1) {
+                                        sResolutionSeparator = SEPARATOR_LOWERCASE_X;
+                                    } else {
+                                        separatorIndex = resolution.indexOf(SEPARATOR_MULTIPLE_SIGN);
+                                        sResolutionSeparator = SEPARATOR_MULTIPLE_SIGN;
+                                    }
+                                }
                             }
-                        } else {
+                        }
+                        if (separatorIndex == -1) {
                             separatorIndex = resolution.indexOf(sResolutionSeparator);
                         }
                         video.setWidth(Integer.parseInt(resolution.substring(0, separatorIndex)));
@@ -431,12 +468,18 @@ public final class VideoListItemDao implements IVideoListItemDao {
         ContentValues values = new ContentValues(1);
         values.put(VIDEOS_COL_PROGRESS, progress);
 
-        if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
-            return true;
-        }
+        mDataBase.beginTransactionNonExclusive();
+        try {
+            if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
+                return true;
+            }
 
-        values.put(VIDEOS_COL_ID, id);
-        return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+            values.put(VIDEOS_COL_ID, id);
+            return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+        } finally {
+            mDataBase.setTransactionSuccessful();
+            mDataBase.endTransaction();
+        }
     }
 
     public int getVideoProgress(long id) {
@@ -460,13 +503,19 @@ public final class VideoListItemDao implements IVideoListItemDao {
         if (item instanceof Video) {
             final long id = ((Video) item).getId();
 
-            values.put(VIDEOS_COL_IS_TOPPED, topped ? 1 : 0);
-            if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
-                return true;
-            }
+            mDataBase.beginTransactionNonExclusive();
+            try {
+                values.put(VIDEOS_COL_IS_TOPPED, topped ? 1 : 0);
+                if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
+                    return true;
+                }
 
-            values.put(VIDEOS_COL_ID, id);
-            return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+                values.put(VIDEOS_COL_ID, id);
+                return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+            } finally {
+                mDataBase.setTransactionSuccessful();
+                mDataBase.endTransaction();
+            }
         } else /* if (item instanceof VideoDirectory) */ {
             values.put(VIDEODIRS_COL_IS_TOPPED, topped ? 1 : 0);
             return 1 == mDataBase.update(
