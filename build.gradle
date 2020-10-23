@@ -35,8 +35,8 @@ ext {
     targetSdkVersion = 29
 
     appcompatVersion = '1.2.0'
-    exoplayer2Version = '2.12.0'
+    exoplayer2Version = '2.12.1'
 
-    testJunitVersion = '4.13'
+    testJunitVersion = '4.13.1'
     androidTestJunitVersion = '1.1.2'
 }

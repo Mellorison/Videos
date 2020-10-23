@@ -8,5 +8,5 @@
         path="Videos.sp.xml" />
     <include
         domain="sharedpref"
-        path="savedFeedback.sp.xml" />
+        path="SavedFeedback.sp.xml" />
 </full-backup-content>

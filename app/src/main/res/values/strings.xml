@@ -115,7 +115,7 @@
     <string name="share">Share</string>
     <string name="size">Size: %s</string>
     <string name="someDirectory">\"%s\" directory</string>
-    <string name="theInstallationPackageHasBeenDestroyed">The installation package has been destroyed.</string>
+    <string name="theInstallationPackageHasBeenDamaged">The installation package has been Damaged.</string>
     <string name="theVideoIsPlaying">The video is playing</string>
     <string name="top">Top</string>
     <string name="unfold">Unfold</string>

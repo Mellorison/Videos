@@ -11,10 +11,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
 
+import com.liuzhenlin.videos.Files;
+
 /**
  * @author 刘振林
  */
-class DatabaseOpenHelper extends SQLiteOpenHelper {
+class DbOpenHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_VIDEOS = "videos";
     public static final String VIDEOS_COL_ID = "_id";
@@ -26,8 +28,8 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
     public static final String VIDEODIRS_COL_PATH = "path";
     public static final String VIDEODIRS_COL_IS_TOPPED = "isTopped";
 
-    public DatabaseOpenHelper(@NonNull Context context) {
-        super(context, "Videos.db", null, 1);
+    public DbOpenHelper(@NonNull Context context) {
+        super(context, Files.DB, null, 1);
     }
 
     @Override

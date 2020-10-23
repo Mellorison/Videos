@@ -13,11 +13,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.liuzhenlin.texturevideoview.misc.Singleton;
+import com.liuzhenlin.videos.Files;
 
 /**
  * @author 刘振林
  */
-public final class AppSharedPreferences {
+public final class AppPrefs {
 
     private final SharedPreferences mSP;
 
@@ -25,23 +26,23 @@ public final class AppSharedPreferences {
     private static final String IS_LIGHT_DRAWER_STATUS = "isLightDrawerStatus";
     private static final String IS_LIGHT_DRAWER_LIST_FOREGROUND = "isLightDrawerListForeground";
 
-    private static final Singleton<Context, AppSharedPreferences> sAppSharedPreferencesSingleton =
-            new Singleton<Context, AppSharedPreferences>() {
+    private static final Singleton<Context, AppPrefs> sAppPrefsSingleton =
+            new Singleton<Context, AppPrefs>() {
                 @SuppressLint("SyntheticAccessor")
                 @NonNull
                 @Override
-                protected AppSharedPreferences onCreate(Context... ctxs) {
-                    return new AppSharedPreferences(ctxs[0]);
+                protected AppPrefs onCreate(Context... ctxs) {
+                    return new AppPrefs(ctxs[0]);
                 }
             };
 
-    public static AppSharedPreferences getSingleton(@NonNull Context context) {
-        return sAppSharedPreferencesSingleton.get(context);
+    public static AppPrefs getSingleton(@NonNull Context context) {
+        return sAppPrefsSingleton.get(context);
     }
 
-    private AppSharedPreferences(Context context) {
+    private AppPrefs(Context context) {
         context = context.getApplicationContext();
-        mSP = context.getSharedPreferences("Videos.sp", Context.MODE_PRIVATE);
+        mSP = context.getSharedPreferences(Files.SHARED_PREFS, Context.MODE_PRIVATE);
     }
 
     @Nullable

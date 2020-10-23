@@ -53,7 +53,7 @@ import com.liuzhenlin.texturevideoview.utils.SystemBarUtils;
 import com.liuzhenlin.videos.App;
 import com.liuzhenlin.videos.Consts;
 import com.liuzhenlin.videos.R;
-import com.liuzhenlin.videos.dao.FeedbackSharedPreferences;
+import com.liuzhenlin.videos.dao.FeedbackSavedPrefs;
 import com.liuzhenlin.videos.observer.OnOrientationChangeListener;
 import com.liuzhenlin.videos.observer.RotationObserver;
 import com.liuzhenlin.videos.observer.ScreenNotchSwitchObserver;
@@ -95,7 +95,7 @@ public class FeedbackActivity extends SwipeBackActivity implements View.OnClickL
 
     @Synthetic boolean mShouldSaveDataOnDestroy;
 
-    private FeedbackSharedPreferences mFeedbackSPs;
+    private FeedbackSavedPrefs mFeedbackSPs;
     private String mSavedFeedbackText = Consts.EMPTY_STRING;
     private String mSavedContactWay = Consts.EMPTY_STRING;
     private List<String> mSavedPicturePaths;
@@ -210,7 +210,7 @@ public class FeedbackActivity extends SwipeBackActivity implements View.OnClickL
 
         mCommitButton.setOnClickListener(this);
 
-        mFeedbackSPs = new FeedbackSharedPreferences(this);
+        mFeedbackSPs = new FeedbackSavedPrefs(this);
         // 恢复上次退出此页面时保存的数据
         if (savedInstanceState == null) {
             cacheCurrData(mFeedbackSPs.getText(), mFeedbackSPs.getContactWay(),

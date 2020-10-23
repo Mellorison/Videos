@@ -29,14 +29,14 @@ import java.io.File;
 
 import kotlin.text.StringsKt;
 
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.TABLE_VIDEODIRS;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.TABLE_VIDEOS;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEODIRS_COL_IS_TOPPED;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEODIRS_COL_NAME;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEODIRS_COL_PATH;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEOS_COL_ID;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEOS_COL_IS_TOPPED;
-import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEOS_COL_PROGRESS;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.TABLE_VIDEODIRS;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.TABLE_VIDEOS;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.VIDEODIRS_COL_IS_TOPPED;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.VIDEODIRS_COL_NAME;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.VIDEODIRS_COL_PATH;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.VIDEOS_COL_ID;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.VIDEOS_COL_IS_TOPPED;
+import static com.liuzhenlin.videos.dao.DbOpenHelper.VIDEOS_COL_PROGRESS;
 
 /**
  * @author 刘振林
@@ -44,7 +44,7 @@ import static com.liuzhenlin.videos.dao.DatabaseOpenHelper.VIDEOS_COL_PROGRESS;
 public final class VideoListItemDao implements IVideoListItemDao {
 
     private final ContentResolver mContentResolver;
-    private final SQLiteDatabase mDataBase;
+    private final SQLiteDatabase mDB;
 
     private static final String[] PROJECTION_VIDEO_URI =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q //@formatter:off
@@ -87,7 +87,7 @@ public final class VideoListItemDao implements IVideoListItemDao {
     private VideoListItemDao(Context context) {
         context = context.getApplicationContext();
         mContentResolver = context.getContentResolver();
-        mDataBase = new DatabaseOpenHelper(context).getWritableDatabase();
+        mDB = new DbOpenHelper(context).getWritableDatabase();
     }
 
     private void ensureResolutionSeparator() {
@@ -128,9 +128,9 @@ public final class VideoListItemDao implements IVideoListItemDao {
         values.put(VIDEOS_COL_PROGRESS, video.getProgress());
         values.put(VIDEOS_COL_IS_TOPPED, video.isTopped() ? 1 : 0);
 
-        mDataBase.beginTransaction();
+        mDB.beginTransaction();
         try {
-            if (mDataBase.insert(TABLE_VIDEOS, null, values) == Consts.NO_ID) {
+            if (mDB.insert(TABLE_VIDEOS, null, values) == Consts.NO_ID) {
                 return false;
             }
 
@@ -142,27 +142,27 @@ public final class VideoListItemDao implements IVideoListItemDao {
             ensureResolutionSeparator();
             values.put(VIDEO_RESOLUTION, video.getWidth() + sResolutionSeparator + video.getHeight());
             if (mContentResolver.insert(VIDEO_URI, values) != null) {
-                mDataBase.setTransactionSuccessful();
+                mDB.setTransactionSuccessful();
                 return true;
             }
         } finally {
-            mDataBase.endTransaction();
+            mDB.endTransaction();
         }
         return false;
     }
 
     @Override
     public boolean deleteVideo(long id) {
-        mDataBase.beginTransaction();
+        mDB.beginTransaction();
         try {
-            mDataBase.delete(TABLE_VIDEOS, VIDEOS_COL_ID + "=" + id, null);
+            mDB.delete(TABLE_VIDEOS, VIDEOS_COL_ID + "=" + id, null);
 
             if (mContentResolver.delete(VIDEO_URI, VIDEO_ID + "=" + id, null) == 1) {
-                mDataBase.setTransactionSuccessful();
+                mDB.setTransactionSuccessful();
                 return true;
             }
         } finally {
-            mDataBase.endTransaction();
+            mDB.endTransaction();
         }
         return false;
     }
@@ -176,11 +176,11 @@ public final class VideoListItemDao implements IVideoListItemDao {
         values.put(VIDEOS_COL_PROGRESS, video.getProgress());
         values.put(VIDEOS_COL_IS_TOPPED, video.isTopped() ? 1 : 0);
 
-        mDataBase.beginTransaction();
+        mDB.beginTransaction();
         try {
-            if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 0) {
+            if (mDB.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 0) {
                 values.put(VIDEOS_COL_ID, id);
-                if (mDataBase.insert(TABLE_VIDEOS, null, values) == -1) {
+                if (mDB.insert(TABLE_VIDEOS, null, values) == -1) {
                     return false;
                 }
             }
@@ -193,11 +193,11 @@ public final class VideoListItemDao implements IVideoListItemDao {
             ensureResolutionSeparator();
             values.put(VIDEO_RESOLUTION, video.getWidth() + sResolutionSeparator + video.getHeight());
             if (mContentResolver.update(VIDEO_URI, values, VIDEO_ID + "=" + id, null) == 1) {
-                mDataBase.setTransactionSuccessful();
+                mDB.setTransactionSuccessful();
                 return true;
             }
         } finally {
-            mDataBase.endTransaction();
+            mDB.endTransaction();
         }
         return false;
     }
@@ -278,14 +278,14 @@ public final class VideoListItemDao implements IVideoListItemDao {
         values.put(VIDEODIRS_COL_NAME, videodir.getName());
         values.put(VIDEODIRS_COL_PATH, videodir.getPath());
         values.put(VIDEODIRS_COL_IS_TOPPED, videodir.isTopped() ? 1 : 0);
-        return mDataBase.insert(TABLE_VIDEODIRS, null, values) != Consts.NO_ID;
+        return mDB.insert(TABLE_VIDEODIRS, null, values) != Consts.NO_ID;
     }
 
     @Override
     public boolean deleteVideoDir(@Nullable String directory) {
         if (directory == null) return false;
 
-        return 1 == mDataBase.delete(
+        return 1 == mDB.delete(
                 TABLE_VIDEODIRS,
                 VIDEODIRS_COL_PATH + "='" + escapedComparisionString(directory) + "'", null);
     }
@@ -297,7 +297,7 @@ public final class VideoListItemDao implements IVideoListItemDao {
         ContentValues values = new ContentValues(2);
         values.put(VIDEODIRS_COL_NAME, videodir.getName());
         values.put(VIDEODIRS_COL_IS_TOPPED, videodir.isTopped() ? 1 : 0);
-        return 1 == mDataBase.update(
+        return 1 == mDB.update(
                 TABLE_VIDEODIRS,
                 values,
                 VIDEODIRS_COL_PATH + "='" + escapedComparisionString(videodir.getPath()) + "'", null);
@@ -308,7 +308,7 @@ public final class VideoListItemDao implements IVideoListItemDao {
     public VideoDirectory queryVideoDirByPath(@Nullable String path) {
         if (path == null) return null;
 
-        Cursor cursor = mDataBase.rawQuery("SELECT * FROM " + TABLE_VIDEODIRS +
+        Cursor cursor = mDB.rawQuery("SELECT * FROM " + TABLE_VIDEODIRS +
                 " WHERE " + VIDEODIRS_COL_PATH + "='" + escapedComparisionString(path) + "'", null);
         if (cursor != null) {
             try {
@@ -325,7 +325,7 @@ public final class VideoListItemDao implements IVideoListItemDao {
     @Nullable
     @Override
     public Cursor queryAllVideoDirs() {
-        return mDataBase.rawQuery("SELECT * FROM " + TABLE_VIDEODIRS, null);
+        return mDB.rawQuery("SELECT * FROM " + TABLE_VIDEODIRS, null);
     }
 
     @NonNull
@@ -408,7 +408,7 @@ public final class VideoListItemDao implements IVideoListItemDao {
             }*/
         }
 
-        Cursor cursor2 = mDataBase.rawQuery(
+        Cursor cursor2 = mDB.rawQuery(
                 "SELECT " + VIDEOS_COL_PROGRESS + "," + VIDEOS_COL_IS_TOPPED +
                         " FROM " + TABLE_VIDEOS +
                         " WHERE " + VIDEOS_COL_ID + "=" + video.getId(), null);
@@ -468,22 +468,22 @@ public final class VideoListItemDao implements IVideoListItemDao {
         ContentValues values = new ContentValues(1);
         values.put(VIDEOS_COL_PROGRESS, progress);
 
-        mDataBase.beginTransactionNonExclusive();
+        mDB.beginTransactionNonExclusive();
         try {
-            if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
+            if (mDB.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
                 return true;
             }
 
             values.put(VIDEOS_COL_ID, id);
-            return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+            return mDB.insert(TABLE_VIDEOS, null, values) > 0;
         } finally {
-            mDataBase.setTransactionSuccessful();
-            mDataBase.endTransaction();
+            mDB.setTransactionSuccessful();
+            mDB.endTransaction();
         }
     }
 
     public int getVideoProgress(long id) {
-        Cursor cursor = mDataBase.rawQuery("SELECT " + VIDEOS_COL_PROGRESS +
+        Cursor cursor = mDB.rawQuery("SELECT " + VIDEOS_COL_PROGRESS +
                 " FROM " + TABLE_VIDEOS +
                 " WHERE " + VIDEOS_COL_ID + "=" + id, null);
         if (cursor != null) {
@@ -503,22 +503,22 @@ public final class VideoListItemDao implements IVideoListItemDao {
         if (item instanceof Video) {
             final long id = ((Video) item).getId();
 
-            mDataBase.beginTransactionNonExclusive();
+            mDB.beginTransactionNonExclusive();
             try {
                 values.put(VIDEOS_COL_IS_TOPPED, topped ? 1 : 0);
-                if (mDataBase.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
+                if (mDB.update(TABLE_VIDEOS, values, VIDEOS_COL_ID + "=" + id, null) == 1) {
                     return true;
                 }
 
                 values.put(VIDEOS_COL_ID, id);
-                return mDataBase.insert(TABLE_VIDEOS, null, values) > 0;
+                return mDB.insert(TABLE_VIDEOS, null, values) > 0;
             } finally {
-                mDataBase.setTransactionSuccessful();
-                mDataBase.endTransaction();
+                mDB.setTransactionSuccessful();
+                mDB.endTransaction();
             }
         } else /* if (item instanceof VideoDirectory) */ {
             values.put(VIDEODIRS_COL_IS_TOPPED, topped ? 1 : 0);
-            return 1 == mDataBase.update(
+            return 1 == mDB.update(
                     TABLE_VIDEODIRS,
                     values,
                     VIDEODIRS_COL_PATH + "='" + escapedComparisionString(item.getPath()) + "'", null);
@@ -528,10 +528,10 @@ public final class VideoListItemDao implements IVideoListItemDao {
     public boolean isVideoListItemTopped(@NonNull VideoListItem item) {
         Cursor cursor;
         if (item instanceof Video) {
-            cursor = mDataBase.rawQuery("SELECT " + VIDEOS_COL_IS_TOPPED + " FROM " + TABLE_VIDEOS +
+            cursor = mDB.rawQuery("SELECT " + VIDEOS_COL_IS_TOPPED + " FROM " + TABLE_VIDEOS +
                     " WHERE " + VIDEOS_COL_ID + "=" + ((Video) item).getId(), null);
         } else {
-            cursor = mDataBase.rawQuery("SELECT " + VIDEODIRS_COL_IS_TOPPED + " FROM " + TABLE_VIDEODIRS +
+            cursor = mDB.rawQuery("SELECT " + VIDEODIRS_COL_IS_TOPPED + " FROM " + TABLE_VIDEODIRS +
                     " WHERE " + VIDEODIRS_COL_PATH + "='" + escapedComparisionString(item.getPath()) + "'", null);
         }
         if (cursor != null) {

@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.liuzhenlin.videos.Consts;
+import com.liuzhenlin.videos.Files;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import kotlin.text.StringsKt;
 /**
  * @author 刘振林
  */
-public class FeedbackSharedPreferences {
+public class FeedbackSavedPrefs {
     private final SharedPreferences mSP;
     private final SharedPreferences.Editor mEditor;
 
@@ -36,8 +37,8 @@ public class FeedbackSharedPreferences {
     private static final String[] DELIMITER_ARRAY_PICTURE_PATHS = {DELIMITER_PICTURE_PATHS};
 
     @SuppressLint("CommitPrefEdits")
-    public FeedbackSharedPreferences(@NonNull Context context) {
-        mSP = context.getSharedPreferences("SavedFeedback.sp", Context.MODE_PRIVATE);
+    public FeedbackSavedPrefs(@NonNull Context context) {
+        mSP = context.getSharedPreferences(Files.SAVED_FEEDBACK_PREFS, Context.MODE_PRIVATE);
         mEditor = mSP.edit();
     }
 

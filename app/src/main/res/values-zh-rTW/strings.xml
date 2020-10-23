@@ -107,7 +107,7 @@
     <string name="share">分享</string>
     <string name="size">大小：%s</string>
     <string name="someDirectory">“%s”目录</string>
-    <string name="theInstallationPackageHasBeenDestroyed">安装包已损坏</string>
+    <string name="theInstallationPackageHasBeenDamaged">安装包已损坏</string>
     <string name="theVideoIsPlaying">正在播放该视频</string>
     <string name="top">置顶</string>
     <string name="unfold">展开</string>

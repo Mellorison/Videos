@@ -59,7 +59,7 @@ import com.liuzhenlin.videos.App;
 import com.liuzhenlin.videos.BuildConfig;
 import com.liuzhenlin.videos.Consts;
 import com.liuzhenlin.videos.R;
-import com.liuzhenlin.videos.dao.AppSharedPreferences;
+import com.liuzhenlin.videos.dao.AppPrefs;
 import com.liuzhenlin.videos.utils.BitmapUtils2;
 import com.liuzhenlin.videos.utils.ColorUtils;
 import com.liuzhenlin.videos.utils.MergeAppUpdateChecker;
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDrawerList.setScrollEnabled(false);
 
                 mDrawerImage = findViewById(R.id.image_drawer);
-                AppSharedPreferences asp = AppSharedPreferences.getSingleton(app);
+                AppPrefs asp = AppPrefs.getSingleton(app);
                 final String path = asp.getDrawerBackgroundPath();
                 // 未设置背景图片
                 if (path == null) {
@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Synthetic void setLightDrawerStatus(boolean light) {
         if (mIsDrawerStatusLight != light) {
             mIsDrawerStatusLight = light;
-            AppSharedPreferences.getSingleton(this).setLightDrawerStatus(light);
+            AppPrefs.getSingleton(this).setLightDrawerStatus(light);
             if (mSlidingDrawerLayout.hasOpenedDrawer()) {
                 setLightStatus(light);
             }
@@ -313,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mDrawerImage.setImageBitmap(bitmap);
             mDrawerImage.setTag(path);
 
-            AppSharedPreferences asp = AppSharedPreferences.getSingleton(this);
+            AppPrefs asp = AppPrefs.getSingleton(this);
             final String savedPath = asp.getDrawerBackgroundPath();
             if (path.equals(savedPath)) {
                 setLightDrawerStatus(asp.isLightDrawerStatus());
@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         void setLightDrawerListForeground(boolean light) {
             if (mIsDrawerListForegroundLight != light) {
                 mIsDrawerListForegroundLight = light;
-                AppSharedPreferences.getSingleton(MainActivity.this).setLightDrawerListForeground(light);
+                AppPrefs.getSingleton(MainActivity.this).setLightDrawerListForeground(light);
 
                 if (light) {
                     mTextColor = Color.WHITE;
@@ -731,7 +731,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         final boolean light = percent >= 0.5f;
         if ((light && mOldDrawerScrollPercent < 0.5f || !light && mOldDrawerScrollPercent >= 0.5f)
-                && AppSharedPreferences.getSingleton(this).isLightDrawerStatus()) {
+                && AppPrefs.getSingleton(this).isLightDrawerStatus()) {
             setLightStatus(light);
         }
         mOldDrawerScrollPercent = percent;

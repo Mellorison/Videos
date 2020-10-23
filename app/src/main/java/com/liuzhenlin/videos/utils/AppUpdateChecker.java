@@ -764,7 +764,7 @@ public final class AppUpdateChecker {
 
             void onAppDownloaded(File apk) {
                 if (apk == null || !apk.exists() || apk.length() != mApkLength) {
-                    Toast.makeText(mContext, R.string.theInstallationPackageHasBeenDestroyed,
+                    Toast.makeText(mContext, R.string.theInstallationPackageHasBeenDamaged,
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
