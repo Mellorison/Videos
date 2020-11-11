@@ -11,8 +11,8 @@ import android.os.AsyncTask
 import androidx.core.util.AtomicFile
 import com.google.gson.Gson
 import com.liuzhenlin.texturevideoview.InternalConsts
-import com.liuzhenlin.texturevideoview.misc.ParallelThreadExecutor
 import com.liuzhenlin.texturevideoview.utils.FileUtils
+import com.liuzhenlin.texturevideoview.utils.ParallelThreadExecutor
 import com.liuzhenlin.videos.bean.TVGroup
 import com.liuzhenlin.videos.utils.Utils
 import java.io.*

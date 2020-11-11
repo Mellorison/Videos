@@ -15,8 +15,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.util.Preconditions
 import com.google.android.material.snackbar.Snackbar
-import com.liuzhenlin.texturevideoview.misc.ParallelThreadExecutor
 import com.liuzhenlin.texturevideoview.utils.FileUtils
+import com.liuzhenlin.texturevideoview.utils.ParallelThreadExecutor
 import com.liuzhenlin.texturevideoview.utils.ShareUtils
 import com.liuzhenlin.texturevideoview.utils.URLUtils
 import com.liuzhenlin.videos.*

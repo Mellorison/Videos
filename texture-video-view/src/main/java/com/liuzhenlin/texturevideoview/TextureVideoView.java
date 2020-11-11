@@ -90,19 +90,21 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.util.Synthetic;
 import com.google.android.exoplayer2.source.MediaSourceFactory;
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.snackbar.Snackbar;
+import com.liuzhenlin.texturevideoview.adapter.ImageLoadingListAdapter;
 import com.liuzhenlin.texturevideoview.drawable.CircularProgressDrawable;
-import com.liuzhenlin.texturevideoview.misc.ParallelThreadExecutor;
-import com.liuzhenlin.texturevideoview.misc.TransitionListenerAdapter;
 import com.liuzhenlin.texturevideoview.service.BackgroundPlaybackControllerService;
 import com.liuzhenlin.texturevideoview.utils.BitmapUtils;
 import com.liuzhenlin.texturevideoview.utils.FileUtils;
+import com.liuzhenlin.texturevideoview.utils.ParallelThreadExecutor;
 import com.liuzhenlin.texturevideoview.utils.ScreenUtils;
 import com.liuzhenlin.texturevideoview.utils.TimeUtil;
+import com.liuzhenlin.texturevideoview.utils.TransitionListenerAdapter;
 import com.liuzhenlin.texturevideoview.utils.URLUtils;
 import com.liuzhenlin.texturevideoview.utils.Utils;
 import com.liuzhenlin.texturevideoview.utils.VideoUtils;
@@ -157,158 +159,8 @@ import java.util.List;
  * some state checks before and after some of the call sites to those methods.
  *
  * <p>Using a TextureVideoView is simple enough.
- * The following example demonstrates how to play a video through the class:
- * <pre>
- * public class DemoActivity extends AppCompatActivity {
- *     private TextureVideoView mVideoView;
- *     private VideoPlayer mVideoPlayer;
- *
- *     {@literal @}Override
- *     public void onCreate(@Nullable Bundle savedInstanceState) {
- *         super.onCreate(savedInstanceState);
- *         setContentView(R.layout.activity_demo);
- *
- *         // First, interrelates TextureVideoView with VideoPlayer
- *         mVideoView = findViewById(R.id.videoview);
- *         mVideoPlayer = new SystemVideoPlayer(this);
- *         mVideoPlayer.setVideoView(mVideoView);
- *         mVideoView.setVideoPlayer(mVideoPlayer);
- *
- *         mVideoView.setTitle("Simplest Playback Demo for TextureVideoView");
- *         mVideoPlayer.setVideoUri(getIntent().getData());
- *         mVideoPlayer.addVideoListener(new IVideoPlayer.VideoListener() {
- *             &#064;Override
- *             public void onVideoStarted() {
- *                 // no-op
- *             }
- *
- *             &#064;Override
- *             public void onVideoStopped() {
- *                 // no-op
- *             }
- *
- *             &#064;Override
- *             public void onVideoRepeat() {
- *                 // no-op
- *             }
- *
- *             &#064;Override
- *             public void onVideoBufferingStateChanged(boolean buffering) {
- *                 // no-op
- *             }
- *
- *             &#064;Override
- *             public void onVideoDurationChanged(int duration) {
- *                 // no-op
- *             }
- *
- *             &#064;Override
- *             public void onVideoSizeChanged(int width, int height) {
- *                 // no-op
- *             }
- *         });
- *         mVideoPlayer.setOnSkipPrevNextListener(new VideoPlayer.OnSkipPrevNextListener() {
- *             &#064;Override
- *             public void onSkipToPrevious() {
- *                 // no-op
- *             }
- *
- *             &#064;Override
- *             public void onSkipToNext() {
- *                 // no-op
- *             }
- *         });
- *         mVideoView.setEventListener(new TextureVideoView.EventListener() {
- *             &#064;Override
- *             public void onPlayerChange(@Nullable VideoPlayer videoPlayer) {
- *                 mVideoPlayer = videoPlayer;
- *             }
- *
- *             &#064;Override
- *             public void onReturnClicked() {
- *                 finish();
- *             }
- *
- *             &#064;Override
- *             public void onBackgroundPlaybackControllerClose() {
- *                 finish();
- *             }
- *
- *             &#064;Override
- *             public void onViewModeChange(int oldMode, int newMode, boolean layoutMatches) {
- *                 switch (newMode) {
- *                     case TextureVideoView.VIEW_MODE_MINIMUM:
- *                         //noinspection StatementWithEmptyBody
- *                         if (!layoutMatches) {
- *                             // do something like entering picture-in-picture mode
- *                         }
- *                         break;
- *                     case TextureVideoView.VIEW_MODE_DEFAULT:
- *                         mVideoView.setFullscreenMode(false, 0);
- *                         break;
- *                     case TextureVideoView.VIEW_MODE_FULLSCREEN:
- *                     case TextureVideoView.VIEW_MODE_LOCKED_FULLSCREEN:
- *                     case TextureVideoView.VIEW_MODE_VIDEO_STRETCHED_FULLSCREEN:
- *                     case TextureVideoView.VIEW_MODE_VIDEO_STRETCHED_LOCKED_FULLSCREEN:
- *                         mVideoView.setFullscreenMode(true, 0);
- *                         break;
- *                 }
- *             }
- *
- *             &#064;Override
- *             public void onShareVideo() {
- *                 // Place the code describing how to share the video here
- *             }
- *
- *             &#064;Override
- *             public void onShareCapturedVideoPhoto(@NonNull File photo) {
- *                 ShareUtils.shareFile(DemoActivity.this, getPackageName() + ".provider",
- *                         photo, "image/*");
- *             }
- *         });
- *         mVideoView.setOpCallback(new TextureVideoView.OpCallback() {
- *             &#064;NonNull
- *             &#064;Override
- *             public Window getWindow() {
- *                 return DemoActivity.this.getWindow();
- *             }
- *
- *             &#064;NonNull
- *             &#064;Override
- *             public Class&lt;? extends Activity&gt; getHostActivityClass() {
- *                 return DemoActivity.this.getClass();
- *             }
- *
- *             // Optional, just returns null to use the default base output directory
- *             // (the primary external storage directory concatenating with this application name).
- *             &#064;Nullable
- *             &#064;Override
- *             public String getAppExternalFilesDir() {
- *                 return null;
- *             }
- *         });
- *     }
- *
- *     {@literal @}Override
- *     protected void onStart() {
- *         super.onStart();
- *         mVideoPlayer.openVideo();
- *     }
- *
- *     {@literal @}Override
- *     protected void onStop() {
- *         super.onStop();
- *         mVideoPlayer.closeVideo();
- *     }
- *
- *     {@literal @}Override
- *     public void onBackPressed() {
- *         if (!mVideoView.onBackPressed()) {
- *             super.onBackPressed();
- *         }
- *     }
- * }
- * </pre>
+ * The library sample ({@link com.liuzhenlin.texturevideoview.sample.DemoActivity}) demonstrates
+ * how to play a video with this class.
  *
  * @author <a href="mailto:2233788867@qq.com">刘振林</a>
  */
@@ -388,7 +240,8 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    public static abstract class PlayListAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+    public static abstract class PlayListAdapter<VH extends RecyclerView.ViewHolder>
+            extends ImageLoadingListAdapter<VH> {
         TextureVideoView videoView;
         ViewGroup drawerView;
         RecyclerView playlist;
@@ -452,7 +305,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
 
     private static final String TAG = "TextureVideoView";
 
-    /*synthetic*/ int mPrivateFlags = PFLAG_CONTROLS_SHOWING;
+    @Synthetic int mPrivateFlags = PFLAG_CONTROLS_SHOWING;
 
     /** If the controls are showing, this is marked into {@link #mPrivateFlags}. */
     private static final int PFLAG_CONTROLS_SHOWING = 1;
@@ -540,28 +393,28 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
     private static final int TIMEOUT_SHOW_CAPTURED_PHOTO = 3000; // ms
 
     @Nullable
-    /*synthetic*/ VideoPlayer mVideoPlayer;
+    @Synthetic VideoPlayer mVideoPlayer;
 
     /** The listener for all the events related to this view we publish. */
     @Nullable
-    /*synthetic*/ EventListener mEventListener;
+    @Synthetic EventListener mEventListener;
 
     @Nullable
-    /*synthetic*/ OpCallback mOpCallback;
+    @Synthetic OpCallback mOpCallback;
 
-    /*synthetic*/ final ConstraintLayout mContentView;
-    /*synthetic*/ final ViewGroup mDrawerView;
+    @Synthetic final ConstraintLayout mContentView;
+    @Synthetic final ViewGroup mDrawerView;
 
-    /*synthetic*/ final RecyclerView mPlayList;
-    /*synthetic*/ View mMoreView;
-    /*synthetic*/ TrackSelectionView mTrackSelectionView;
+    @Synthetic final RecyclerView mPlayList;
+    @Synthetic View mMoreView;
+    @Synthetic TrackSelectionView mTrackSelectionView;
 
     /** Shows the video playback. */
-    /*synthetic*/ final TextureView mTextureView;
+    @Synthetic final TextureView mTextureView;
     /** Caches the Surface created for this view. */
-    /*synthetic*/ Surface mSurface;
+    @Synthetic Surface mSurface;
     /** Surface used by the {@link VideoPlayer} set for this view. */
-    /*synthetic*/ Surface mUsedSurface; // null or mSurface
+    @Synthetic Surface mUsedSurface; // null or mSurface
 
     private final SubtitleView mSubtitleView;
     private static final CaptionStyleCompat sDefaultCaptionStyle =
@@ -573,78 +426,78 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
                     /* edgeColor= */ Color.BLACK,
                     /* typeface= */ null);
 
-    /*synthetic*/ final ViewGroup mTopControlsFrame;
-    /*synthetic*/ final TextView mTitleText;
-    /*synthetic*/ final View mShareButton;
-    /*synthetic*/ final View mTrackButton;
-    /*synthetic*/ final View mMoreButton;
+    @Synthetic final ViewGroup mTopControlsFrame;
+    @Synthetic final TextView mTitleText;
+    @Synthetic final View mShareButton;
+    @Synthetic final View mTrackButton;
+    @Synthetic final View mMoreButton;
 
-    /*synthetic*/ final ImageView mLockUnlockButton;
-    /*synthetic*/ final View mCameraButton;
-    /*synthetic*/ final View mVideoCameraButton;
+    @Synthetic final ImageView mLockUnlockButton;
+    @Synthetic final View mCameraButton;
+    @Synthetic final View mVideoCameraButton;
 
-    /*synthetic*/ final ViewGroup mBrightnessOrVolumeFrame;
+    @Synthetic final ViewGroup mBrightnessOrVolumeFrame;
     private final TextView mBrightnessOrVolumeText;
-    /*synthetic*/ final ProgressBar mBrightnessOrVolumeProgress;
+    @Synthetic final ProgressBar mBrightnessOrVolumeProgress;
 
     private final ViewGroup mBottomControlsFrame;
-    /*synthetic*/ ImageView mToggleButton;
-    /*synthetic*/ SeekBar mVideoSeekBar;
+    @Synthetic ImageView mToggleButton;
+    @Synthetic SeekBar mVideoSeekBar;
     // BEGIN fields: Bottom controls only in non-fullscreen mode
     private TextView mVideoProgressText;
     private TextView mVideoDurationText;
-    /*synthetic*/ View mMinimizeButton;
-    /*synthetic*/ View mFullscreenButton;
+    @Synthetic View mMinimizeButton;
+    @Synthetic View mFullscreenButton;
     // END fields: Bottom controls only in non-fullscreen mode
     // BEGIN fields: Bottom controls only in fullscreen mode
-    /*synthetic*/ View mSkipNextButton;
+    @Synthetic View mSkipNextButton;
     private TextView mVideoProgressDurationText;
-    /*synthetic*/ AppCompatSpinner mSpeedSpinner;
-    /*synthetic*/ View mChooseEpisodeButton;
+    @Synthetic AppCompatSpinner mSpeedSpinner;
+    @Synthetic View mChooseEpisodeButton;
     // END fields: Bottom controls only in fullscreen mode
 
     /**
      * Scrim view with a 33.3% black background shows on our TextureView to obscure primary
      * video frames while the video thumb text is visible to the user.
      */
-    /*synthetic*/ final View mScrimView;
-    /*synthetic*/ final TextView mSeekingVideoThumbText;
+    @Synthetic final View mScrimView;
+    @Synthetic final TextView mSeekingVideoThumbText;
 
-    /*synthetic*/ final ViewGroup mSeekingTextProgressFrame;
-    /*synthetic*/ final TextView mSeekingProgressDurationText;
-    /*synthetic*/ final ProgressBar mSeekingProgress;
+    @Synthetic final ViewGroup mSeekingTextProgressFrame;
+    @Synthetic final TextView mSeekingProgressDurationText;
+    @Synthetic final ProgressBar mSeekingProgress;
 
     private final ImageView mLoadingImage;
     private final CircularProgressDrawable mLoadingDrawable;
 
-    /*synthetic*/ View mCapturedPhotoView;
-    /*synthetic*/ Bitmap mCapturedBitmap;
-    /*synthetic*/ File mSavedPhoto;
-    /*synthetic*/ AsyncTask<Void, Void, File> mSaveCapturedPhotoTask;
+    @Synthetic View mCapturedPhotoView;
+    @Synthetic Bitmap mCapturedBitmap;
+    @Synthetic File mSavedPhoto;
+    @Synthetic AsyncTask<Void, Void, File> mSaveCapturedPhotoTask;
 
     private View mClipView;
-    /*synthetic*/ AsyncTask<Void, Bitmap, Void> mLoadClipThumbsTask;
+    @Synthetic AsyncTask<Void, Bitmap, Void> mLoadClipThumbsTask;
 
     private ListPopupWindow mSpinnerListPopup;
-    /*synthetic*/ PopupWindow mSpinnerPopup;
+    @Synthetic PopupWindow mSpinnerPopup;
 
     /** The minimum height of the drawer views (the playlist and the 'more' view) */
-    /*synthetic*/ int mDrawerViewMinimumHeight;
+    @Synthetic int mDrawerViewMinimumHeight;
 
     /** Caches the initial `paddingTop` of the top controls frame */
-    /*synthetic*/ final int mNavInitialPaddingTop;
+    @Synthetic final int mNavInitialPaddingTop;
 
     /** Title of the video */
-    /*synthetic*/ String mTitle;
+    @Synthetic String mTitle;
 
     private final String mStringPlay;
     private final String mStringPause;
     private final String mStringLock;
-    /*synthetic*/ final String mStringUnlock;
+    @Synthetic final String mStringUnlock;
     private final String mStringBrightnessFollowsSystem;
     private final String[] mSpeedsStringArray;
-    /*synthetic*/ final float mSeekingViewHorizontalOffset;
-    /*synthetic*/ final float mSeekingVideoThumbCornerRadius;
+    @Synthetic final float mSeekingViewHorizontalOffset;
+    @Synthetic final float mSeekingVideoThumbCornerRadius;
 
     /**
      * Bright complement to the primary branding color. By default, this is the color applied to
@@ -664,16 +517,16 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
     private static final Interpolator sStretchShrinkVideoInterpolator = new OvershootInterpolator();
 
     private final OnChildTouchListener mOnChildTouchListener = new OnChildTouchListener();
-    /*synthetic*/ final OnChildClickListener mOnChildClickListener = new OnChildClickListener();
-    /*synthetic*/ final OnVideoSeekBarChangeListener mOnVideoSeekBarChangeListener =
+    @Synthetic final OnChildClickListener mOnChildClickListener = new OnChildClickListener();
+    @Synthetic final OnVideoSeekBarChangeListener mOnVideoSeekBarChangeListener =
             new OnVideoSeekBarChangeListener();
 
-    /*synthetic*/ final MsgHandler mMsgHandler = new MsgHandler(this);
+    @Synthetic final MsgHandler mMsgHandler = new MsgHandler(this);
 
     /**
      * Runnable used to turn off the video playback when a scheduled time point is arrived.
      */
-    /*synthetic*/ TimedOffRunnable mTimedOffRunnable;
+    @Synthetic TimedOffRunnable mTimedOffRunnable;
 
     /** Indicating that the brightness value of a window should follow the system's */
     public static final int BRIGHTNESS_FOLLOWS_SYSTEM = -1;
@@ -690,9 +543,9 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
     private static final int RATIO_VOLUME_PROGRESS_TO_VOLUME = 20;
 
     /** Maximum volume of the system media audio stream ({@link AudioManager#STREAM_MUSIC}). */
-    /*synthetic*/ final int mMaxVolume;
+    @Synthetic final int mMaxVolume;
 
-    /*synthetic*/ final AudioManager mAudioManager;
+    @Synthetic final AudioManager mAudioManager;
 
     private static BackgroundPlaybackControllerServiceConn sBgPlaybackControllerServiceConn;
 
@@ -702,13 +555,13 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
 
     private static Field sLeftDraggerField;
     private static Field sRightDraggerField;
-    /*synthetic*/ static Field sDrawerOpenStateField;
+    @Synthetic static Field sDrawerOpenStateField;
 
     private static Field sListPopupField;
     private static Field sPopupField;
     private static Field sPopupDecorViewField;
     private static Field sForceIgnoreOutsideTouchField;
-    /*synthetic*/ static Field sPopupOnDismissListenerField;
+    @Synthetic static Field sPopupOnDismissListenerField;
 
     static {
         try {
@@ -1303,11 +1156,11 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ int volumeToProgress(int volume) {
+    @Synthetic int volumeToProgress(int volume) {
         return volume * RATIO_VOLUME_PROGRESS_TO_VOLUME;
     }
 
-    /*synthetic*/ int progressToVolume(int progress) {
+    @Synthetic int progressToVolume(int progress) {
         return (int) ((float) progress / RATIO_VOLUME_PROGRESS_TO_VOLUME + 0.5f);
     }
 
@@ -1555,7 +1408,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         setVideoStretchedToFitFullscreenLayoutInternal(stretched, true);
     }
 
-    /*synthetic*/ void setVideoStretchedToFitFullscreenLayoutInternal(boolean stretched, boolean checkSwitch) {
+    @Synthetic void setVideoStretchedToFitFullscreenLayoutInternal(boolean stretched, boolean checkSwitch) {
         if (stretched == isVideoStretchedToFitFullscreenLayout()) {
             return;
         }
@@ -1826,7 +1679,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         return mViewMode;
     }
 
-    /*synthetic*/ void setViewMode(@ViewMode int mode, boolean layoutMatches) {
+    @Synthetic void setViewMode(@ViewMode int mode, boolean layoutMatches) {
         final int old = mViewMode;
         if (old != mode) {
             mViewMode = mode;
@@ -1951,7 +1804,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
      *                till {@link #hideControls(boolean)} is called.
      * @param animate whether to fade in the controls smoothly or not
      */
-    /*synthetic*/ void showControls(int timeout, boolean animate) {
+    @Synthetic void showControls(int timeout, boolean animate) {
         mMsgHandler.removeMessages(MsgHandler.MSG_HIDE_CONTROLS);
 
         if ((mPrivateFlags & PFLAG_CONTROLS_SHOWING) == 0) {
@@ -2091,7 +1944,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ void checkCameraButtonsVisibilities() {
+    @Synthetic void checkCameraButtonsVisibilities() {
         boolean show = isControlsShowing() && isInFullscreenMode() && !isLocked();
         if (show && isSpinnerPopupShowing()) {
             final int[] location = new int[2];
@@ -2139,7 +1992,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ void hideCapturedPhotoView(boolean share) {
+    @Synthetic void hideCapturedPhotoView(boolean share) {
         if (mCapturedPhotoView != null) {
             Transition transition = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -2187,7 +2040,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         hideCapturedPhotoView(false);
     }
 
-    /*synthetic*/ void captureVideoPhoto() {
+    @Synthetic void captureVideoPhoto() {
         if (mSurface == null) return;
 
         final int width = mTextureView.getWidth();
@@ -2369,7 +2222,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         content.startAnimation(animation);
     }
 
-    /*synthetic*/ String obtainAppExternalFilesDir() {
+    @Synthetic String obtainAppExternalFilesDir() {
         String directory = null;
         if (mOpCallback != null) {
             directory = mOpCallback.getAppExternalFilesDir();
@@ -2381,7 +2234,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
     }
 
     @SuppressLint("StaticFieldLeak")
-    /*synthetic*/ void showClipView() {
+    @Synthetic void showClipView() {
         if (mClipView != null) return;
 
         VideoPlayer videoPlayer = mVideoPlayer;
@@ -2742,7 +2595,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ void refreshBrightnessProgress(int progress) {
+    @Synthetic void refreshBrightnessProgress(int progress) {
         if ((mOnChildTouchListener.touchFlags & OnChildTouchListener.TFLAG_ADJUSTING_BRIGHTNESS)
                 == OnChildTouchListener.TFLAG_ADJUSTING_BRIGHTNESS) {
             final boolean brightnessFollowsSystem = progress == -1;
@@ -2755,7 +2608,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ void refreshVolumeProgress(int progress) {
+    @Synthetic void refreshVolumeProgress(int progress) {
         if ((mOnChildTouchListener.touchFlags & OnChildTouchListener.TFLAG_ADJUSTING_VOLUME)
                 == OnChildTouchListener.TFLAG_ADJUSTING_VOLUME) {
             mBrightnessOrVolumeText.setText(
@@ -2765,11 +2618,11 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ void refreshVideoProgress(int progress) {
+    @Synthetic void refreshVideoProgress(int progress) {
         refreshVideoProgress(progress, true);
     }
 
-    /*synthetic*/ void refreshVideoProgress(int progress, boolean refreshSeekBar) {
+    @Synthetic void refreshVideoProgress(int progress, boolean refreshSeekBar) {
         VideoPlayer videoPlayer = mVideoPlayer;
         if (videoPlayer == null) progress = 0;
         final int videoBufferProgress = videoPlayer == null ? 0 : videoPlayer.getVideoBufferProgress();
@@ -2833,11 +2686,11 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         }
     }
 
-    /*synthetic*/ boolean isSpinnerPopupShowing() {
+    @Synthetic boolean isSpinnerPopupShowing() {
         return mSpinnerPopup != null && mSpinnerPopup.isShowing();
     }
 
-    /*synthetic*/ void dismissSpinnerPopup() {
+    @Synthetic void dismissSpinnerPopup() {
         if (mSpinnerListPopup != null) {
             mSpinnerListPopup.dismiss();
         }
@@ -4111,7 +3964,7 @@ public class TextureVideoView extends AbsTextureVideoView implements ViewHostEve
         sBgPlaybackControllerServiceConn.connectFor(this);
     }
 
-    /*synthetic*/ void tryStopBackgroundPlaybackControllerService() {
+    @Synthetic void tryStopBackgroundPlaybackControllerService() {
         if (sBgPlaybackControllerServiceConn != null) {
             if (sBgPlaybackControllerServiceConn.disconnectFor(this)) {
                 sBgPlaybackControllerServiceConn = null;

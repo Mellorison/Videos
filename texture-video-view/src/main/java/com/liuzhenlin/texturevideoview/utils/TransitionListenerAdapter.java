@@ -1,4 +1,4 @@
-package com.liuzhenlin.texturevideoview.misc;
+package com.liuzhenlin.texturevideoview.utils;
 
 import android.os.Build;
 import android.transition.Transition;

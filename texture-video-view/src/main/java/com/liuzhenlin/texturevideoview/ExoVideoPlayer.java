@@ -22,6 +22,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.collection.SimpleArrayMap;
 
+import com.bumptech.glide.util.Synthetic;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -78,7 +79,7 @@ public class ExoVideoPlayer extends VideoPlayer {
 
     private String mUserAgent;
 
-    /*synthetic*/ SimpleExoPlayer mExoPlayer;
+    @Synthetic SimpleExoPlayer mExoPlayer;
     private DefaultTrackSelector mTrackSelector;
     private MediaSourceFactory mMediaSourceFactory;
     private MediaSourceFactory mTmpMediaSourceFactory;
@@ -567,7 +568,7 @@ public class ExoVideoPlayer extends VideoPlayer {
     /**
      * Similar to {@link #pause(boolean)}}, but does not check the playback state.
      */
-    /*synthetic*/ void pauseInternal(boolean fromUser) {
+    @Synthetic void pauseInternal(boolean fromUser) {
         mExoPlayer.setPlayWhenReady(false);
         mInternalFlags = mInternalFlags & ~$FLAG_VIDEO_PAUSED_BY_USER
                 | (fromUser ? $FLAG_VIDEO_PAUSED_BY_USER : 0);

@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.liuzhenlin.texturevideoview.misc.ParallelThreadExecutor;
+import com.liuzhenlin.texturevideoview.utils.ParallelThreadExecutor;
 import com.liuzhenlin.videos.R;
 import com.liuzhenlin.videos.bean.MailInfo;
 

@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RawRes;
 import androidx.annotation.RestrictTo;
 
+import com.bumptech.glide.util.Synthetic;
 import com.google.android.material.snackbar.Snackbar;
 import com.liuzhenlin.texturevideoview.bean.AudioTrackInfo;
 import com.liuzhenlin.texturevideoview.bean.SubtitleTrackInfo;
@@ -70,7 +71,7 @@ public class IjkVideoPlayer extends VideoPlayer {
 
     private static final long MEDIA_CODEC_ENABLED = 1L;
 
-    /*synthetic*/ IjkMediaPlayer mIjkPlayer;
+    @Synthetic IjkMediaPlayer mIjkPlayer;
     private Surface mSurface;
 
     /** Rotation degrees of the played video source */

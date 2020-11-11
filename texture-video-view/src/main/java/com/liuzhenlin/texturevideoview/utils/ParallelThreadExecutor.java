@@ -3,12 +3,14 @@
  * Copyright © 2019 刘振林. All rights reserved.
  */
 
-package com.liuzhenlin.texturevideoview.misc;
+package com.liuzhenlin.texturevideoview.utils;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import com.bumptech.glide.util.Synthetic;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -42,7 +44,7 @@ public final class ParallelThreadExecutor extends ThreadPoolExecutor {
     private static final int BACKUP_POOL_SIZE = 5;
     private static final int KEEP_ALIVE_SECONDS = 3;
 
-    /*synthetic*/ static final ThreadFactory sThreadFactory = new ThreadFactory() {
+    @Synthetic static final ThreadFactory sThreadFactory = new ThreadFactory() {
         private final AtomicInteger count = new AtomicInteger();
 
         public Thread newThread(@NonNull Runnable r) {

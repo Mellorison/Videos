@@ -3,7 +3,7 @@
  * Copyright © 2020 刘振林. All rights reserved.
  */
 
-package com.liuzhenlin.texturevideoview.misc;
+package com.liuzhenlin.texturevideoview.utils;
 
 import android.util.SparseArray;
 

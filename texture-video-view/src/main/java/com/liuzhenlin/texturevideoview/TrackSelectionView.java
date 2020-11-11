@@ -21,10 +21,11 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.util.Synthetic;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.liuzhenlin.texturevideoview.bean.TrackInfo;
-import com.liuzhenlin.texturevideoview.misc.ComparableSparseArray;
+import com.liuzhenlin.texturevideoview.utils.ComparableSparseArray;
 import com.liuzhenlin.texturevideoview.utils.Utils;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public class TrackSelectionView extends LinearLayout {
 
     private TrackNameProvider mTrackNameProvider;
 
-    /*synthetic*/ IVideoPlayer mVideoPlayer;
+    @Synthetic IVideoPlayer mVideoPlayer;
     private final IVideoPlayer.OnPlaybackStateChangeListener mOnPlaybackStateChangeListener =
             (oldState, newState) -> {
                 switch (newState) {
@@ -55,7 +56,7 @@ public class TrackSelectionView extends LinearLayout {
                 }
             };
 
-    /*synthetic*/ ComparableSparseArray<ComparableSparseArray<TrackInfo>> mTrackGroups =
+    @Synthetic ComparableSparseArray<ComparableSparseArray<TrackInfo>> mTrackGroups =
             newTrackGroupSparseArray();
 
     private static final int TRACK_GROUP_COUNT = 3;
@@ -105,7 +106,7 @@ public class TrackSelectionView extends LinearLayout {
                 }).attach();
     }
 
-    /*synthetic*/ TrackNameProvider getTrackNameProvider() {
+    @Synthetic TrackNameProvider getTrackNameProvider() {
         if (mTrackNameProvider == null) {
             mTrackNameProvider = new DefaultTrackNameProvider(getResources());
         }

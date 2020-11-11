@@ -8,7 +8,7 @@ package com.liuzhenlin.videos.model
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.AsyncTask
-import com.liuzhenlin.texturevideoview.misc.ParallelThreadExecutor
+import com.liuzhenlin.texturevideoview.utils.ParallelThreadExecutor
 import com.liuzhenlin.videos.bean.Video
 import com.liuzhenlin.videos.bean.VideoDirectory
 import com.liuzhenlin.videos.dao.VideoListItemDao

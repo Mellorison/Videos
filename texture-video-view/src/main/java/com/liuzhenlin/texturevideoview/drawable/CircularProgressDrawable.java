@@ -41,6 +41,8 @@ import androidx.annotation.NonNull;
 import androidx.core.util.Preconditions;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
+import com.bumptech.glide.util.Synthetic;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -123,8 +125,8 @@ public class CircularProgressDrawable extends Drawable implements Animatable {
 
     private final Resources mResources;
     private Animator mAnimator;
-    /*synthetic*/ float mRotationCount;
-    /*synthetic*/ boolean mFinishing;
+    @Synthetic float mRotationCount;
+    @Synthetic boolean mFinishing;
 
     /**
      * @param context application context
@@ -488,7 +490,7 @@ public class CircularProgressDrawable extends Drawable implements Animatable {
      * The new ring color will be a translation from the starting ring color to
      * the next color.
      */
-    /*synthetic*/ void updateRingColor(float interpolatedTime, Ring ring) {
+    @Synthetic void updateRingColor(float interpolatedTime, Ring ring) {
         if (interpolatedTime > COLOR_CHANGE_OFFSET) {
             ring.setColor(evaluateColorChange((interpolatedTime - COLOR_CHANGE_OFFSET)
                             / (1f - COLOR_CHANGE_OFFSET), ring.getStartingColor(),
@@ -522,7 +524,7 @@ public class CircularProgressDrawable extends Drawable implements Animatable {
     /**
      * Update the ring start and end trim according to current time of the animation.
      */
-    /*synthetic*/ void applyTransformation(float interpolatedTime, Ring ring, boolean lastFrame) {
+    @Synthetic void applyTransformation(float interpolatedTime, Ring ring, boolean lastFrame) {
         if (mFinishing) {
             applyFinishTranslation(interpolatedTime, ring);
             // Below condition is to work around a ValueAnimator issue where onAnimationRepeat is
